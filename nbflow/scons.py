@@ -33,7 +33,8 @@ def build_notebook(target, source, env, timeout="120"):
     # modification time than the source -- otherwise scons will think that the
     # targets always are out of date and need to be rebuilt
     for t in target:
-        os.utime(str(t), None)
+        if not str(t).startswith('.phony'):
+            os.utime(str(t), None)
 
     return None
 
