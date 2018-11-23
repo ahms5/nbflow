@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import subprocess as sp
 from functools import partial
@@ -32,7 +33,7 @@ def build_notebook(target, source, env, timeout="120"):
     # modification time than the source -- otherwise scons will think that the
     # targets always are out of date and need to be rebuilt
     for t in target:
-        sp.call(["touch", str(t)])
+        os.utime(str(t), None)
 
     return None
 
