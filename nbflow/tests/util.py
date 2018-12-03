@@ -1,4 +1,5 @@
 import subprocess as sp
+import sys
 import os
 
 from nbconvert.preprocessors import ClearOutputPreprocessor
@@ -7,10 +8,15 @@ from nbformat.v4 import new_notebook, new_code_cell
 from copy import deepcopy
 
 
-def run_command(cmd, retcode=0, env=os.environ):
-    p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT, env=env, shell=True)
-    code = p.wait(timeout=30)
-    stdout, _ = p.communicate(timeout=30)
+def run_command(cmd, retcode=0):
+    if sys.platform == 'win32':
+        # shell=True required on windows to run scons using subprocess
+        shell = True
+    else:
+        shell = False
+    p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=shell)
+    code = p.wait(timeout=60)
+    stdout, _ = p.communicate(timeout=60)
     stdout = stdout.replace(b"\x1b[?1034h", b"")
     if code != retcode:
         print(stdout)
