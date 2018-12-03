@@ -29,42 +29,84 @@ def test_example(temp_cwd):
 
     # check the explicit output of the nbflow command
     output = run_command([sys.executable, "-m", "nbflow", "analyses"])
-    expected = dedent(
-        """
-        {
-          "analyses/analyze_data.ipynb": {
-            "sources": [
-              "%(path)s/results/data.json"
-            ], 
-            "targets": [
-              "%(path)s/results/stats.json"
-            ]
-          }, 
-          "analyses/gen_data.ipynb": {
-            "sources": [], 
-            "targets": [
-              "%(path)s/results/data.json"
-            ]
-          }
-        }
-        """ % dict(path=os.path.abspath(os.path.realpath(temp_cwd)))
-    ).lstrip()
-    assert json.loads(output.decode('UTF-8')) == json.loads(expected)
+    if sys.platform == 'win32':
+        json_path = os.path.abspath(os.path.realpath(temp_cwd))
+        json_escaped_path = json_path.replace("\\", "\\\\")
+        expected = dedent(
+            """
+            {
+              "analyses\\\\analyze_data.ipynb": {
+                "sources": [
+                  "%(path)s\\\\results\\\\data.json"
+                ],
+                "targets": [
+                  "%(path)s\\\\results\\\\stats.json"
+                ]
+              },
+              "analyses\\\\gen_data.ipynb": {
+                "sources": [],
+                "targets": [
+                  "%(path)s\\\\results\\\\data.json"
+                ]
+              }
+            }
+            """ % dict(path=json_escaped_path)
+        ).lstrip()
+    else:
+        expected = dedent(
+            """
+            {
+              "analyses/analyze_data.ipynb": {
+                "sources": [
+                  "%(path)s/results/data.json"
+                ],
+                "targets": [
+                  "%(path)s/results/stats.json"
+                ]
+              },
+              "analyses/gen_data.ipynb": {
+                "sources": [],
+                "targets": [
+                  "%(path)s/results/data.json"
+                ]
+              }
+            }
+            """ % dict(path=os.path.abspath(os.path.realpath(temp_cwd)))
+        ).lstrip()
+
+    output_decoded = output.decode('UTF-8')
+    json_output = json.loads(output_decoded)
+    json_expected = json.loads(expected)
+    assert json_output == json_expected
 
     # try running scons
-    output = run_command(["scons"])
-    expected = dedent(
-        """
-        scons: Reading SConscript files ...
-        scons: done reading SConscript files.
-        scons: Building targets ...
-        analyses/gen_data.ipynb --> results/data.json
-        analyses/analyze_data.ipynb --> results/stats.json
-        scons: done building targets.
-        """
-    ).lstrip()
+    if sys.platform == 'win32':
+        expected = dedent(
+            """
+            scons: Reading SConscript files ...
+            scons: done reading SConscript files.
+            scons: Building targets ...
+            analyses\\gen_data.ipynb --> results\\data.json
+            analyses\\analyze_data.ipynb --> results\\stats.json
+            scons: done building targets.
+            """
+        ).lstrip()
+    else:
+        expected = dedent(
+            """
+            scons: Reading SConscript files ...
+            scons: done reading SConscript files.
+            scons: Building targets ...
+            analyses/gen_data.ipynb --> results/data.json
+            analyses/analyze_data.ipynb --> results/stats.json
+            scons: done building targets.
+            """
+        ).lstrip()
 
-    assert output == expected.encode('UTF-8')
+    output = run_command(["scons"])
+
+    output_replace = output.decode().replace('\r', '')
+    assert output_replace.encode('utf-8') == expected.encode('utf-8')
 
     # run scons again, make sure it doesn't want to do anything
     output = run_command(["scons", "-n"])
@@ -78,7 +120,8 @@ def test_example(temp_cwd):
         """
     ).lstrip()
 
-    assert output == expected.encode('UTF-8')
+    output_replace = output.decode().replace('\r', '')
+    assert output_replace.encode('utf-8') == expected.encode('utf-8')
 
 
 def test_empty_notebook(temp_cwd, sconstruct):
@@ -96,7 +139,8 @@ def test_empty_notebook(temp_cwd, sconstruct):
         """
     ).lstrip()
 
-    assert output == expected.encode('UTF-8')
+    output_replace = output.decode().replace('\r', '')
+    assert output_replace.encode('utf-8') == expected.encode('utf-8')
 
 
 def test_notebook_with_errors(temp_cwd, sconstruct):
@@ -122,7 +166,8 @@ def test_notebook_without_depends(temp_cwd, sconstruct):
         """
     ).lstrip()
 
-    assert output == expected.encode('UTF-8')
+    output_replace = output.decode().replace('\r', '')
+    assert output_replace.encode('utf-8') == expected.encode('utf-8')
 
 
 def test_notebook_without_dest(temp_cwd, sconstruct):
@@ -151,5 +196,5 @@ def test_multiple_notebooks_with_no_dests(temp_cwd, sconstruct):
         """
     ).lstrip()
 
-    assert output == expected.encode('UTF-8')
-
+    output_replace = output.decode().replace('\r', '')
+    assert output_replace.encode('utf-8') == expected.encode('utf-8')
