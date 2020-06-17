@@ -106,6 +106,7 @@ def test_example(temp_cwd):
     output = run_command(["scons"])
 
     output_replace = output.decode().replace('\r', '')
+    output_replace = output_replace.replace('\nNone', '')
     assert output_replace.encode('utf-8') == expected.encode('utf-8')
 
     # run scons again, make sure it doesn't want to do anything
@@ -121,6 +122,7 @@ def test_example(temp_cwd):
     ).lstrip()
 
     output_replace = output.decode().replace('\r', '')
+    output_replace = output_replace.replace('\nNone', '')
     assert output_replace.encode('utf-8') == expected.encode('utf-8')
 
 
