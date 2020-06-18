@@ -13,6 +13,30 @@ jobs:
     - name: "linux_py38"
       sudo: false
       python: 3.8
+    - name: "windows_py35"
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version=3.5.4
+        - python -m pip install --upgrade pip
+        - pip install pytest
+      env: PATH=/c/Python35:/c/Python35/Scripts:$PATH
+    - name: "windows_py36"
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version=3.6.8
+        - python -m pip install --upgrade pip
+        - pip install pytest
+      env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
+    - name: "windows_py37"
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version=3.7.7
+        - python -m pip install --upgrade pip
+        - pip install pytest
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
     - name: "windows_py38"
       os: windows
       language: shell
