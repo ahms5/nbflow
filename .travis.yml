@@ -1,13 +1,19 @@
 language: python
 jobs:
   include:
-    - name: "linux"
+    - name: "linux_py35"
       sudo: false
-      python:
-        - 3.5
-        - 3.6
-        - 3.7
-    - name: "windows"
+      python: 3.5
+    - name: "linux_py36"
+      sudo: false
+      python: 3.6
+    - name: "linux_py37"
+      sudo: false
+      python: 3.7
+    - name: "linux_py38"
+      sudo: false
+      python: 3.8
+    - name: "windows_py38"
       os: windows
       language: shell
       before_install:
