@@ -16,7 +16,7 @@ class DependencyExtractor(Application):
     description = 'Extract the hierarchy of dependencies from notebooks in the specified folder.'
     version = __version__
 
-    def _params_to_dict(self, params):
+    def parameters_to_dict(self, params):
         globals_dict = {}
         locals_dict = {}
         exec(params, globals_dict, locals_dict)
@@ -33,9 +33,9 @@ class DependencyExtractor(Application):
                     break
                 if keep:
                     text += line
-        return self._params_to_dict(text)
+        return self.parameters_to_dict(text)
 
-    def extract_parameters(self, filename):
+    def extract_parameters_notebook(self, filename):
         with open(filename, "r") as fh:
             nb = reads(fh.read())
 
@@ -49,12 +49,7 @@ class DependencyExtractor(Application):
         if defs_cell is None:
             return {}
 
-        return self._params_to_dict(defs_cell.source)
-        # defs_code = defs_cell.source
-        # globals_dict = {}
-        # locals_dict = {}
-        # exec(defs_code, globals_dict, locals_dict)
-        # return locals_dict
+        return self.parameters_to_dict(defs_cell.source)
 
     def resolve_path(self, source, path):
         dirname = os.path.dirname(source)
@@ -71,23 +66,20 @@ class DependencyExtractor(Application):
 
             for filename in files:
                 modname, ext = os.path.splitext(os.path.basename(filename))
-                # with open(filename, "r") as fh:
-                #     nb = reads(fh.read())
+
                 if ext == '.py':
                     params = self.extract_parameters_script(filename)
-                    if '__depends__' not in params:
-                        continue
-                    if '__dest__' not in params:
-                        # just skip, could be a py library file
-                        continue
+
                 elif ext == '.ipynb':
-                    params = self.extract_parameters(filename)
-                    if '__depends__' not in params:
-                        continue
-                    if '__dest__' not in params:
-                        raise ValueError("__dest__ is not defined in {}".format(filename))
+                    params = self.extract_parameters_notebook(filename)
                 else:
                     raise(ValueError("Wrong format: {}".format(ext)))
+
+                if '__depends__' not in params:
+                        continue
+                if '__dest__' not in params:
+                    raise ValueError(
+                        "__dest__ is not defined in {}".format(filename))
 
                 # get sources that are specified in the file
                 sources = [self.resolve_path(filename, x) for x in params['__depends__']]
