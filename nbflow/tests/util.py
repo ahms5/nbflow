@@ -15,8 +15,8 @@ def run_command(cmd, retcode=0):
     else:
         shell = False
     p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=shell)
-    code = p.wait(timeout=60)
-    stdout, _ = p.communicate(timeout=60)
+    code = p.wait(timeout=120)
+    stdout, _ = p.communicate(timeout=120)
     stdout = stdout.replace(b"\x1b[?1034h", b"")
     if code != retcode:
         print(stdout)

@@ -18,7 +18,7 @@ def test_notebook_long_excecution(temp_cwd, sconstruct):
     shutil.copy(os.path.join(root, "SConstruct"), "SConstruct")
     clear_notebooks("analyses")
 
-    run_command(["scons","timeout=1"], retcode=2)
+    run_command(["scons","timeout=0.1"], retcode=2)
 
 def test_example(temp_cwd):
     # copy example files
