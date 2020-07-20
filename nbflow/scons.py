@@ -23,6 +23,7 @@ def build_cmd(notebook, timeout):
 
     return cmd
 
+
 def build_notebook(target, source, env, timeout="120"):
     notebook = str(source[0])
     code = sp.call(build_cmd(notebook, timeout))
@@ -39,16 +40,17 @@ def build_notebook(target, source, env, timeout="120"):
     return None
 
 
-def build_cmd_script(script):
-    return ['python', script]
-
-
 def build_script(target, source, env, timeout='120'):
-    notebook = str(source[0])
-    script_dir, nbook = os.path.split(os.path.abspath(notebook))
-    code = sp.call(build_cmd_script(nbook), cwd=script_dir)
+    script_rel = str(source[0])
+    script_dir, script = os.path.split(os.path.abspath(script_rel))
+
+    build_cmd = ['python', script]
+
+    code = sp.call(build_cmd, cwd=script_dir)
     if code != 0:
         raise RuntimeError("Error executing script")
+
+    return None
 
 
 def build_func(target, source, env, timeout='120'):
@@ -78,12 +80,17 @@ def print_cmd_line(s, targets, sources, env):
 def setup(env, directories, args):
     env['PRINT_CMD_LINE_FUNC'] = print_cmd_line
     env.Decider('timestamp-newer')
-    DEPENDENCIES = json.loads(sp.check_output([sys.executable, "-m", "nbflow"] + directories).decode('UTF-8'))
+    DEPENDENCIES = json.loads(
+        sp.check_output(
+            [sys.executable, "-m", "nbflow"] + directories
+        ).decode('UTF-8'))
+
     timeout = args.get('timeout', None)
     if timeout is not None:
         build_notebook_timeout = partial(build_notebook, timeout=str(timeout))
     else:
         build_notebook_timeout = build_notebook
+
     for script in DEPENDENCIES:
         deps = DEPENDENCIES[script]
         if len(deps['targets']) == 0:
