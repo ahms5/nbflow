@@ -40,25 +40,25 @@ def build_notebook(target, source, env, timeout="120"):
     return None
 
 
-def build_script(target, source, env, timeout='120'):
+def build_script(target, source, env, timeout=120):
     script_rel = str(source[0])
     script_dir, script = os.path.split(os.path.abspath(script_rel))
 
     build_cmd = ['python', script]
 
-    code = sp.call(build_cmd, cwd=script_dir)
+    code = sp.call(build_cmd, cwd=script_dir, timeout=timeout)
     if code != 0:
         raise RuntimeError("Error executing script")
 
     return None
 
 
-def build_func(target, source, env, timeout='120'):
+def build_func(target, source, env, timeout=120):
     ext = os.path.splitext(os.path.basename(str(source[0])))[1]
     if ext == '.py':
-        build_script(target, source, env, timeout)
+        build_script(target, source, env, float(timeout))
     elif ext == '.ipynb':
-        build_notebook(target, source, env, timeout)
+        build_notebook(target, source, env, str(timeout))
 
     return None
 
@@ -87,9 +87,9 @@ def setup(env, directories, args):
 
     timeout = args.get('timeout', None)
     if timeout is not None:
-        build_notebook_timeout = partial(build_notebook, timeout=str(timeout))
+        build_func_timeout = partial(build_func, timeout=timeout)
     else:
-        build_notebook_timeout = build_notebook
+        build_func_timeout = build_func
 
     for script in DEPENDENCIES:
         deps = DEPENDENCIES[script]
@@ -97,4 +97,4 @@ def setup(env, directories, args):
             targets = ['.phony_{}'.format(script)]
         else:
             targets = deps['targets']
-        env.Command(targets, [script] + deps['sources'], build_func)
+        env.Command(targets, [script] + deps['sources'], build_func_timeout)
