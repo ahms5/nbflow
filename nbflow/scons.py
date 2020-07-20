@@ -7,11 +7,11 @@ from functools import partial
 import nbconvert
 
 
-def build_cmd(notebook, timeout):
+def build_cmd(notebook):
     cmd = [
         "jupyter", "nbconvert",
         "--log-level=ERROR",
-        "--ExecutePreprocessor.timeout=" + timeout,
+        # "--ExecutePreprocessor.timeout=" + timeout,
         "--execute",
         "--inplace",
         "--to", "notebook"
@@ -24,9 +24,9 @@ def build_cmd(notebook, timeout):
     return cmd
 
 
-def build_notebook(target, source, env, timeout="120"):
+def build_notebook(target, source, env, timeout=120):
     notebook = str(source[0])
-    code = sp.call(build_cmd(notebook, timeout))
+    code = sp.call(build_cmd(notebook), timeout=timeout)
     if code != 0:
         raise RuntimeError("Error executing notebook")
 
@@ -56,9 +56,9 @@ def build_script(target, source, env, timeout=120):
 def build_func(target, source, env, timeout=120):
     ext = os.path.splitext(os.path.basename(str(source[0])))[1]
     if ext == '.py':
-        build_script(target, source, env, float(timeout))
+        build_script(target, source, env, timeout)
     elif ext == '.ipynb':
-        build_notebook(target, source, env, str(timeout))
+        build_notebook(target, source, env, timeout)
 
     return None
 
