@@ -43,7 +43,7 @@ def build_cmd_script(script):
     return ['python', script]
 
 
-def build_script(target, source, env, script, timeout='120'):
+def build_script(target, source, env, timeout='120'):
     notebook = str(source[0])
     script_dir, nbook = os.path.split(os.path.abspath(notebook))
     code = sp.call(build_cmd_script(nbook), cwd=script_dir)
@@ -51,14 +51,15 @@ def build_script(target, source, env, script, timeout='120'):
         raise RuntimeError("Error executing script")
 
 
-def build_func(target, source, env, script, timeout='120'):
-    ext = os.path.splitext(os.path.basename(script))[1]
+def build_func(target, source, env, timeout='120'):
+    ext = os.path.splitext(os.path.basename(str(source[0])))[1]
     if ext == '.py':
-        build_script(target, source, env, script, timeout)
+        build_script(target, source, env, timeout)
     elif ext == '.ipynb':
         build_notebook(target, source, env, timeout)
 
     return None
+
 
 def print_cmd_line(s, targets, sources, env):
     """s       is the original command line string
@@ -89,5 +90,4 @@ def setup(env, directories, args):
             targets = ['.phony_{}'.format(script)]
         else:
             targets = deps['targets']
-        build_func_partial = partial(build_func, script=script)
-        env.Command(targets, [script] + deps['sources'], build_func_partial)
+        env.Command(targets, [script] + deps['sources'], build_func)
