@@ -45,20 +45,10 @@ def build_cmd_script(script):
 
 def build_script(target, source, env, script, timeout='120'):
     notebook = str(source[0])
-    print(notebook)
     script_dir, nbook = os.path.split(os.path.abspath(notebook))
     code = sp.call(build_cmd_script(nbook), cwd=script_dir)
     if code != 0:
         raise RuntimeError("Error executing script")
-
-    # we need to touch each of the targets so that they have a later
-    # modification time than the source -- otherwise scons will think that the
-    # targets always are out of date and need to be rebuilt
-    for t in target:
-        if not str(t).startswith('.phony'):
-            os.utime(str(t), None)
-
-    return None
 
 
 def build_func(target, source, env, script, timeout='120'):
