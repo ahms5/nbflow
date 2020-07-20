@@ -39,6 +39,37 @@ def build_notebook(target, source, env, timeout="120"):
     return None
 
 
+def build_cmd_script(script):
+    return ['python', script]
+
+
+def build_script(target, source, env, script, timeout='120'):
+    notebook = str(source[0])
+    print(notebook)
+    script_dir, nbook = os.path.split(os.path.abspath(notebook))
+    code = sp.call(build_cmd_script(nbook), cwd=script_dir)
+    if code != 0:
+        raise RuntimeError("Error executing script")
+
+    # we need to touch each of the targets so that they have a later
+    # modification time than the source -- otherwise scons will think that the
+    # targets always are out of date and need to be rebuilt
+    for t in target:
+        if not str(t).startswith('.phony'):
+            os.utime(str(t), None)
+
+    return None
+
+
+def build_func(target, source, env, script, timeout='120'):
+    ext = os.path.splitext(os.path.basename(script))[1]
+    if ext == '.py':
+        build_script(target, source, env, script, timeout)
+    elif ext == '.ipynb':
+        build_notebook(target, source, env, timeout)
+
+    return None
+
 def print_cmd_line(s, targets, sources, env):
     """s       is the original command line string
        targets is the list of target nodes
@@ -68,4 +99,5 @@ def setup(env, directories, args):
             targets = ['.phony_{}'.format(script)]
         else:
             targets = deps['targets']
-        env.Command(targets, [script] + deps['sources'], build_notebook_timeout)
+        build_func_partial = partial(build_func, script=script)
+        env.Command(targets, [script] + deps['sources'], build_func_partial)
