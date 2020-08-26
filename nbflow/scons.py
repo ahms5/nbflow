@@ -24,7 +24,7 @@ def build_cmd(notebook):
     return cmd
 
 
-def build_notebook(target, source, env, timeout=120):
+def build_notebook(target, source, env, timeout=-1):
     notebook = str(source[0])
     code = sp.call(build_cmd(notebook), timeout=timeout)
     if code != 0:
@@ -40,7 +40,7 @@ def build_notebook(target, source, env, timeout=120):
     return None
 
 
-def build_script(target, source, env, timeout=120):
+def build_script(target, source, env, timeout=-1):
     script_rel = str(source[0])
     script_dir, script = os.path.split(os.path.abspath(script_rel))
 
@@ -53,7 +53,7 @@ def build_script(target, source, env, timeout=120):
     return None
 
 
-def build_func(target, source, env, timeout=120):
+def build_func(target, source, env, timeout=-1):
     ext = os.path.splitext(os.path.basename(str(source[0])))[1]
     if ext == '.py':
         build_script(target, source, env, timeout)
