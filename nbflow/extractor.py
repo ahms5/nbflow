@@ -25,14 +25,18 @@ class DependencyExtractor(Application):
     def extract_parameters_script(self, script):
         with open(script) as file:
             text = ''
-            keep = False
+            found_deps = False
             for line in file:
                 if ('__depends__' in line) or ('__requires__' in line):
-                    keep = True
-                elif ('# %%' in line) and (keep == True):
+                    found_deps = True
+                elif ('# %%' in line) and (found_deps == True):
                     break
-                if keep:
-                    text += line
+
+                text += line
+
+            if not found_deps:
+                return {}
+
         return self.parameters_to_dict(text)
 
     def extract_parameters_notebook(self, filename):
