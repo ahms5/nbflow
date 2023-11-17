@@ -67,3 +67,4 @@ target/
 \.pytest_cache/
 
 MANIFEST
+.DS_Store

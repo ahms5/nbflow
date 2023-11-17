@@ -1,6 +1,7 @@
 import sys
 import os
 import shutil
+import pytest
 
 from textwrap import dedent
 from .util import run_command, clear_notebooks, create_notebook
@@ -10,19 +11,24 @@ import json
 def test_nbflow_no_args(temp_cwd):
     run_command([sys.executable, "-m", "nbflow"], retcode=1)
 
-
-def test_notebook_long_excecution(temp_cwd, sconstruct):
+@pytest.mark.parametrize('project',  ['example', 'example-files'])
+def test_notebook_long_excecution(temp_cwd, sconstruct, project):
     # copy example files
-    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "example"))
+    root = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", project))
     shutil.copytree(os.path.join(root, "analyses"), "analyses")
     shutil.copy(os.path.join(root, "SConstruct"), "SConstruct")
     clear_notebooks("analyses")
 
     run_command(["scons","timeout=0.1"], retcode=2)
 
-def test_example(temp_cwd):
+
+@pytest.mark.parametrize('project',  ['example', 'example-files'])
+def test_example(temp_cwd, project):
+    postfix = 'ipynb' if project is 'example' else 'py'
     # copy example files
-    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "example"))
+    root = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", project))
     shutil.copytree(os.path.join(root, "analyses"), "analyses")
     shutil.copy(os.path.join(root, "SConstruct"), "SConstruct")
     clear_notebooks("analyses")
@@ -50,28 +56,28 @@ def test_example(temp_cwd):
                 ]
               }
             }
-            """ % dict(path=json_escaped_path)
+            """.replace('ipynb', postfix) % dict(path=json_escaped_path)
         ).lstrip()
     else:
         expected = dedent(
             """
             {
               "analyses/analyze_data.ipynb": {
-                "sources": [
-                  "%(path)s/results/data.json"
-                ],
                 "targets": [
                   "%(path)s/results/stats.json"
+                ],
+                "sources": [
+                  "%(path)s/results/data.json"
                 ]
               },
               "analyses/gen_data.ipynb": {
-                "sources": [],
                 "targets": [
                   "%(path)s/results/data.json"
-                ]
+                ],
+                "sources": []
               }
             }
-            """ % dict(path=os.path.abspath(os.path.realpath(temp_cwd)))
+            """.replace('ipynb', postfix) % dict(path=os.path.abspath(os.path.realpath(temp_cwd)))
         ).lstrip()
 
     output_decoded = output.decode('UTF-8')
@@ -89,7 +95,7 @@ def test_example(temp_cwd):
             analyses\\gen_data.ipynb --> results\\data.json
             analyses\\analyze_data.ipynb --> results\\stats.json
             scons: done building targets.
-            """
+            """.replace('ipynb', postfix)
         ).lstrip()
     else:
         expected = dedent(
@@ -100,7 +106,7 @@ def test_example(temp_cwd):
             analyses/gen_data.ipynb --> results/data.json
             analyses/analyze_data.ipynb --> results/stats.json
             scons: done building targets.
-            """
+            """.replace('ipynb', postfix)
         ).lstrip()
 
     output = run_command(["scons"])
