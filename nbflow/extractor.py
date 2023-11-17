@@ -20,6 +20,7 @@ class DependencyExtractor(Application):
         globals_dict = {}
         locals_dict = {}
         exec(params, globals_dict, locals_dict)
+        print(locals_dict)
         return locals_dict
 
     def extract_parameters_script(self, script):
