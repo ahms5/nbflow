@@ -20,7 +20,6 @@ class DependencyExtractor(Application):
         globals_dict = {}
         locals_dict = {}
         exec(params, globals_dict, locals_dict)
-        print(locals_dict)
         return locals_dict
 
     def extract_parameters_script(self, script):
@@ -79,7 +78,7 @@ class DependencyExtractor(Application):
                     params = self.extract_parameters_notebook(filename)
                 else:
                     raise(ValueError("Wrong format: {}".format(ext)))
-
+                print(params)
                 if '__depends__' not in params:
                         continue
                 if '__dest__' not in params:
