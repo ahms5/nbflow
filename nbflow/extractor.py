@@ -78,7 +78,6 @@ class DependencyExtractor(Application):
                     params = self.extract_parameters_notebook(filename)
                 else:
                     raise(ValueError("Wrong format: {}".format(ext)))
-                print(params)
                 if '__depends__' not in params:
                         continue
                 if '__dest__' not in params:
